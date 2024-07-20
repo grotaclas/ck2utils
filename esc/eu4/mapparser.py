@@ -450,7 +450,7 @@ class Eu4MapParser(Eu4Parser):
             if not match:
                 continue
             number = int(match.group())
-            if number >= self.max_provinces:
+            if number not in self.all_provinceIDs:
                 continue
 
             cores = set()

@@ -51,11 +51,11 @@ def disk_cache(serializer=PickleSerializer):
     setting eu4cachedir to None disables the cache, but it doesn't clear it
     """
     def decorating_function(f):
-        if not eu4cachedir:
-            return f
 
         @wraps(f)
         def wrapper(self):
+            if not eu4cachedir:
+                return f
             cachedir_with_module = eu4cachedir / f.__module__
             cachedir_with_module.mkdir(parents=True, exist_ok=True)
             cachefile = cachedir_with_module / (f.__name__ + '.' + serializer.get_file_extension())

@@ -31,4 +31,8 @@ ck3cachedir = rootpath / 'parsecache' / 'ck3parser'
 # newer eu4 scripts store their output in a subfolder of the outpath named after the eu4 version number
 outpath = rootpath / 'output'
 
+# list of Paths to mod folders which should be used when parsing eu4 files
+eu4mod_paths: List[pathlib.Path] = []
+# prefix of the mod for use in Template:Mflag. E.g. 'pf'
+eu4mod_prefix: str|None = None
 

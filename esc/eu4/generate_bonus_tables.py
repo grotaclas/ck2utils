@@ -165,14 +165,22 @@ class BonusTableGenerator:
 class PolicyListGenerator:
     colors = {'ADM': '#7de77d', 'DIP': '#7dc3e7', 'MIL': '#e6e77d'}
 
-    def __init__(self):
+    def __init__(self, idea_groups: list[str] = None):
+        """if idea_groups are specified, only policies for those groups are generated"""
         self.eu4parser = Eu4Parser()
         self.parser = self.eu4parser.parser
         self.formatted_modifiers = None
+        self.idea_groups = idea_groups
 
     def get_policy_list(self, category):
         """all policies of a category (e.g. ADM) as a list"""
-        return [policy for policy in self.eu4parser.all_policies.values() if policy.category == category]
+        filtered_idea_groups = {self.eu4parser.all_idea_groups[group] for group in ['firepower_ideas', 'liberty_ideas', 'assimilation_ideas']}
+        return [policy for policy in self.eu4parser.all_policies.values() if policy.category == category
+                and (
+                        self.idea_groups is None
+                        or
+                        len(set(policy.idea_groups) & filtered_idea_groups) > 0
+                )]
 
     def get_policy(self, idea_group1, idea_group2):
         for policy in self.eu4parser.all_policies.values():
@@ -221,6 +229,7 @@ class PolicyListGenerator:
                         rearranged_modifier_lines.append(rearranged_modifier_line)
                     else:
                         raise Exception('Cant handle line ' + modifierline)
+                        # print('Warning: Cant handle line' + modifierline, file=sys.stderr)
 
                 lines.append('| style="background-color:{}" | {}'.format(self.colors[policy.category], "<br>".join(rearranged_modifier_lines)))
             else:
@@ -284,15 +293,22 @@ class PolicyListGenerator:
         return self.formatted_modifiers[policy.name]
 
     def format_policy(self, policy):
-        return [
+        result = [
             '{{policy',
             '|name = ' + policy.display_name,
-            '|desc = ' + policy.description,
-            '|ig1 = ' + policy.get_idea_group_short_name(0),
-            '|ig2 = ' + policy.get_idea_group_short_name(1),
-            '|effect = ' + self.format_modifiers(policy),
-            '}}'
         ]
+        # some mods dont have descriptions for policies
+        if len(policy.description) > 0:
+            result.append(
+                '|desc = ' + policy.description
+            )
+        result.extend([
+                '|ig1 = ' + policy.get_idea_group_short_name(0),
+                '|ig2 = ' + policy.get_idea_group_short_name(1),
+                '|effect = ' + self.format_modifiers(policy),
+                '}}'
+        ])
+        return result
 
     def get_policy_section(self, category):
         lines = [get_SVersion_header()]

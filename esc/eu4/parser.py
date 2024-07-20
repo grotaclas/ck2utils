@@ -6,7 +6,7 @@ from collections import OrderedDict
 # add the parent folder to the path so that imports work even if the working directory is the eu4 folder
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from ck2parser import SimpleParser, Obj, String, Number
-from localpaths import eu4dir
+from localpaths import eu4dir, eu4mod_paths
 from eu4.paths import eu4_version, eu4_major_version
 from eu4.eu4lib import Religion, Idea, IdeaGroup, Policy, Eu4Color, Country, Mission, MissionGroup, GovernmentReform, \
     CultureGroup, Culture, DLC, BaseGame, Estate
@@ -24,14 +24,20 @@ class Eu4Parser:
     localizationOverrides = {}
 
     def __init__(self):
-        self.parser = SimpleParser()
+        self.parser = SimpleParser(*eu4mod_paths)
         self.parser.basedir = eu4dir
 
     @cached_property
     @disk_cache()
     def _localisation_dict(self):
         localisation_dict = {}
-        for path in (eu4dir / 'localisation').glob('*_l_english.yml'):
+
+        paths = list(self.parser.files('localisation/*_l_english.yml'))
+        # put replace localisations at the end so that they override the normal localisation.
+        # TODO: this does not take mod load order into account when multiple mods replace the same localisation
+        paths.extend(self.parser.files('localisation/replace/*_l_english.yml'))
+
+        for path in paths:
             with path.open(encoding='utf-8-sig') as f:
                 for line in f:
                     match = re.fullmatch(r'\s*([^#\s:]+):\d?\s*"(.*)"[^"]*', line)
@@ -198,7 +204,7 @@ class Eu4Parser:
                         modifiers[n2.val] = v2.val
                 all_policies[policy_name] = Policy(policy_name,
                                                    self.localize(policy_name),
-                                                   self.localize('desc_' + policy_name),
+                                                   self.localize('desc_' + policy_name, default=''),
                                                    category,
                                                    modifiers,
                                                    idea_groups)
@@ -274,8 +280,8 @@ class Eu4Parser:
     def all_countries(self):
         """returns a dictionary. keys are tags and values are Country objects. It is ordered by the tag order"""
         countries = OrderedDict()
-        for tag, country_file in self.parser.parse_file('common/country_tags/00_countries.txt'):
-            countries[tag.val] = Country(tag.val, self.localize(tag.val), parser=self, country_file=country_file.val)
+        for tag, country_file in self.parser.merge_parse('common/country_tags/*.txt'):
+            countries[tag] = Country(tag, self.localize(tag), parser=self, country_file=country_file)
         return countries
 
     @cached_property
