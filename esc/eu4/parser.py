@@ -281,7 +281,7 @@ class Eu4Parser:
         """returns a dictionary. keys are tags and values are Country objects. It is ordered by the tag order"""
         countries = OrderedDict()
         for tag, country_file in self.parser.merge_parse('common/country_tags/*.txt'):
-            countries[tag] = Country(tag, self.localize(tag), parser=self, country_file=country_file)
+            countries[tag] = Country(tag, self.localize(tag), parser=self, country_file=country_file.val)
         return countries
 
     @cached_property
