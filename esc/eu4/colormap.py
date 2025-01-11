@@ -177,7 +177,7 @@ class ColorMapGenerator:
         return out
 
     def create_shaded_image(self, color_to_provinces, color_to_provinces_without_shading=None, name='',
-                            crop_to_color=None, margin=10):
+                            crop_to_color=None, margin=10, first_shade_width=3, second_shade_width=3):
         color_first_image = color_to_provinces.copy()
         color_second_image = OrderedDict(reversed(list(color_to_provinces.items())))
         if color_to_provinces_without_shading:
@@ -189,7 +189,7 @@ class ColorMapGenerator:
         shaded_image = Image.new(first_image.mode, first_image.size)
         for x in range(first_image.width):
             for y in range(first_image.height):
-                if (x+y) % 6 < 3:
+                if (x+y) % (first_shade_width + second_shade_width) < second_shade_width:  # second shade is first image
                     source_image_for_current_pixel = first_image
                 else:
                     source_image_for_current_pixel = second_image
