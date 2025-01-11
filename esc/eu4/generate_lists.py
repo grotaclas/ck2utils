@@ -1276,7 +1276,8 @@ class CountryList(Eu4FileGenerator):
 
     link_overrides = {
         'NAT': 'Colonization#Natives',
-        'HAW': 'Oceanian_super-region#Hawai\'i'
+        'HAW': 'Oceanian_super-region#Hawai\'i',
+        'HLR': 'Holy Roman Empire (country)',
     }
 
     flag_overrides = {'HAW': 'HAW.png'}
@@ -1287,7 +1288,7 @@ class CountryList(Eu4FileGenerator):
     def __init__(self, country_page_prefix: str = '', skip_vanilla_tags: bool = False, always_include_tags: list[str] = None):
         super().__init__()
         self.parser = Eu4MapParser()
-        self.flag_file_prefix = eu4mod_prefix
+        self.flag_file_prefix = eu4mod_prefix if eu4mod_prefix else ''
         self.country_page_prefix = country_page_prefix
         self.skip_vanilla_tags = skip_vanilla_tags
         if always_include_tags:
