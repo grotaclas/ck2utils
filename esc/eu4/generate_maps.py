@@ -108,6 +108,25 @@ class MapGenerator:
                 'orange': [730, 2108],
             }, 'Formmanchu', crop_to_color=True)
 
+        self.formation_map('FormYemen', [387, 388, 390, 4280], [389, 391, 2346], claimed_areas=['yemen_area', 'upper_yemen_area', 'tihama_al_yemen_area', 'hadramut_area'])
+        self.formation_map('FormGeorgia', [422, 423, 2203, 2204, 4301], [462, 2196, 4303], claimed_areas=['kartli_kakheti_area', 'samtskhe_area', 'imereti_area'])
+        self.formation_map('Persiaprovinces', [414, 429, 433, 2213, 2215], [426, 2218], [416, 432, 2221], claimed_regions=['persia_region'])
+
+    def formation_map(self, filename: str, required_provinces: list[int], optional_provinces: list[int], other_optional_provinces: list[int] = None, claimed_areas: list[str] = [], claimed_regions: list[str] = []):
+        color_to_provinces = {
+            'green': optional_provinces,
+            'Darkturquoise': other_optional_provinces,
+            # claims. provinces which are not green get shaded with the default land color
+            'land': [prov.id for prov in self.mapparser.all_land_provinces.values() if
+                     prov.id not in optional_provinces and (prov.area.name in claimed_areas or prov.region.name in claimed_regions)],
+            'important': claimed_areas + claimed_regions,
+        }
+        if not other_optional_provinces:
+            del color_to_provinces['turquoise']
+        self.color_map_generator.create_shaded_image(color_to_provinces,
+                                                     {'brightred': required_provinces},
+                                                     filename, crop_to_color=True, first_shade_width=4, second_shade_width=2, margin=20)
+
 # currently not used by the wiki
 #         self.color_map_generator.generate_mapimage_with_several_colors({
 #             'yellow': ['upper_doab_area', 'lower_doab_area', 'oudh_area', 'katehar_area', 'sirhind_area', 'lahore_area', 'sind_sagar_area'], # claims
